@@ -7,8 +7,8 @@
 
 using namespace std;
 
-const int BORDA_PRINCIPAL_VERTICAL = 120;
-const int BORDA_PRINCIPAL_HORIZONTAL = 60;
+const int BORDA_PRINCIPAL_VERTICAL = 29;
+const int BORDA_PRINCIPAL_HORIZONTAL = 119;
 const char CERCA = '#';
 const char VAZIO = '\0';
 
@@ -16,8 +16,8 @@ struct Pagina_inicial {
 	char corpo[BORDA_PRINCIPAL_VERTICAL][BORDA_PRINCIPAL_HORIZONTAL];
 };
 
-void _preencher_corpo(Pagina_inicial &pagina, int &linha, int &coluna, int chamadas = 0, int ZERO = 0) {
-	if (linha == BORDA_PRINCIPAL_VERTICAL - 1 && coluna == BORDA_PRINCIPAL_HORIZONTAL - 1 || chamadas == 270) {
+void _preencher_corpo(Pagina_inicial &pagina, int &linha, int coluna, int chamadas = 0, int ZERO = 0) {
+	if (chamadas == BORDA_PRINCIPAL_HORIZONTAL) {
 		return;
 	}
 
@@ -26,12 +26,12 @@ void _preencher_corpo(Pagina_inicial &pagina, int &linha, int &coluna, int chama
 		_preencher_corpo(pagina, linha, ++coluna, ++chamadas);
 	}
 	else {
-		_preencher_corpo(pagina, ++linha, ZERO, ++chamadas);
+		_preencher_corpo(pagina, ++linha, 0, ++chamadas);
 	}
 }
 
 void preencher_corpo(Pagina_inicial &pagina, int linha = 0, int coluna = 0) {
-	if (linha == BORDA_PRINCIPAL_VERTICAL - 1 && coluna == BORDA_PRINCIPAL_HORIZONTAL - 1) {
+	if (linha == BORDA_PRINCIPAL_VERTICAL) {
 		return;
 	}
 	_preencher_corpo(pagina, linha, coluna);
@@ -68,9 +68,9 @@ void bordas_principal(Pagina_inicial &pagina, int auxiliar, int passagens = 0, i
 	bordas_principal(pagina, auxiliar, passagens, linha, coluna);
 }
 
-void _desenhar_pagina_inicial(Pagina_inicial pagina, int &linha, int &coluna, int chamadas = 0, int ZERO = 0) {
-	if (linha == BORDA_PRINCIPAL_VERTICAL - 1 && coluna == BORDA_PRINCIPAL_HORIZONTAL - 1 || chamadas == 130) {
-		cout << pagina.corpo[linha][coluna];
+void _desenhar_pagina_inicial(Pagina_inicial pagina, int &linha, int coluna, int chamadas = 0, int ZERO = 0) {
+	if (chamadas == BORDA_PRINCIPAL_HORIZONTAL) {
+		cout << endl;
 		return;
 	}
 
@@ -79,17 +79,18 @@ void _desenhar_pagina_inicial(Pagina_inicial pagina, int &linha, int &coluna, in
 	if (coluna != BORDA_PRINCIPAL_HORIZONTAL - 1)
 		_desenhar_pagina_inicial(pagina, linha, ++coluna, ++chamadas);
 	else {
-		cout << endl;
-		_desenhar_pagina_inicial(pagina, ++linha, ZERO, ++chamadas);
+		_desenhar_pagina_inicial(pagina, ++linha, 0, ++chamadas);
 	}
 }
+
 void desenhar_pagina_inicial(Pagina_inicial pagina, int linha = 0, int coluna = 0) {
-	if (linha == BORDA_PRINCIPAL_VERTICAL - 1 && coluna == BORDA_PRINCIPAL_HORIZONTAL - 1) {
+	if (linha == BORDA_PRINCIPAL_VERTICAL) {
 		return;
 	}
 	_desenhar_pagina_inicial(pagina, linha, coluna);
 	desenhar_pagina_inicial(pagina, linha, coluna);
 }
+
 
 int main()
 {
