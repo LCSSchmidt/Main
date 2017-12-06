@@ -28,6 +28,13 @@ const int MENSANGEM_NOME_COMPLETO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZ
 const int MENSANGEM_NOME_COMPLETO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 3;
 const int MENSANGEM_DATA_DE_NASCIMENTO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL;
 const int MENSANGEM_DATA_DE_NASCIMENTO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 4;
+const int MENSANGEM_GENERO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL;
+const int MENSANGEM_GENERO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 5;
+const int MENSAGEM_DE_ERRO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL;
+const int MENSAGEM_DE_ERRO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 10;
+const int MENSAGEM_USUARIO_CRIACO_SUCESSO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL - 20;
+const int MENSAGEM_USUARIO_CRIACO_SUCESSO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 10;
+
 const char CERCA = '#';
 const char VAZIO = '\0';
 
@@ -104,6 +111,18 @@ void chamar_CursorPosition(string elemento) {
 	else if (elemento == "Data de Nascimento Ano Preenchimento") {
 		setCursorPosition_posicao(MENSANGEM_DATA_DE_NASCIMENTO_X + somatorio + 2, MENSANGEM_DATA_DE_NASCIMENTO_Y);
 	}
+	else if (elemento == "Mensagem de Erro") {
+		setCursorPosition_posicao(MENSAGEM_DE_ERRO_X, MENSAGEM_DE_ERRO_Y);
+	}
+	else if (elemento == "Genero") {
+		setCursorPosition_posicao(MENSANGEM_GENERO_X, MENSANGEM_GENERO_Y);
+	}
+	else if (elemento == "Genero Preenchimento") {
+		setCursorPosition_posicao(MENSANGEM_GENERO_X + somatorio, MENSANGEM_GENERO_Y);
+	}
+	else if (elemento == "Usuario Criado com Sucesso") {
+		setCursorPosition_posicao(MENSAGEM_USUARIO_CRIACO_SUCESSO_X, MENSAGEM_USUARIO_CRIACO_SUCESSO_Y);
+	}
 
 }
 
@@ -111,6 +130,16 @@ void senha_limpar_campo() {
 	chamar_CursorPosition("Senha Preenchimento");
 	cout << setw(40) << VAZIO;
 	chamar_CursorPosition("Confirmar Senha Preenchimento");
+	cout << setw(40) << VAZIO;
+}
+
+void data_de_nascimento_limpar_campo() {
+	chamar_CursorPosition("Data de Nascimento Dia Preenchimento");
+	cout << setw(40) << VAZIO;
+}
+
+void nome_de_usuario_limpar_campo() {
+	chamar_CursorPosition("Nome de Usuario Preenchimento");
 	cout << setw(40) << VAZIO;
 }
 
@@ -204,7 +233,7 @@ void desenhar_pagina_inicial(Corpo_principal pagina, int linha = 0, int coluna =
 	desenhar_pagina_inicial(pagina, linha, coluna);
 }
 
-void pagina_inicial_opcao() {
+int pagina_inicial_opcao() {
 	int opcao;
 	bool situacao = false;
 	do{
@@ -226,6 +255,7 @@ void pagina_inicial_opcao() {
 
 	} while (situacao);
 	limpar_mensagens_pagina_inicial_opcao();
+	return opcao;
 }
 
 void usuario_autenticacao() {
@@ -233,7 +263,7 @@ void usuario_autenticacao() {
 }
 
 bool senha_verificar_igualdade(string senha1, string senha2, int tamanho_da_senha, int indice = 0) {
-	if (indice == tamanho_da_senha)
+	if (indice == tamanho_da_senha && tamanho_da_senha != 0)
 		return false;
 
 	if (senha1[indice] != senha2[indice]) {
@@ -253,6 +283,32 @@ bool senha_chamar_verificar_igualdade(string *senha, string senha2) {
 	return situacao;
 }
 
+void mensagens_de_erro(string elemento) {
+	if (elemento == "Senha") {
+		cout << "Senhas Incompativeis";
+	}
+	else if (elemento == "Data de Nascimento") {
+		cout << "Nao e permitido menores de idade";
+	}
+	else if (elemento == "Nome Indisponivel") {
+		cout << "Nome ja utulizado";
+	}
+	else if (elemento == "Nome nao Cadastrado") {
+		cout << "Nome nao Cadastrado";
+	}
+	else if (elemento == "Senha Login") {
+		cout << "Senha esta incorreta";
+	}
+	else if (elemento == "Nome nao Permitido") {
+		cout << "Nome nao Permitido";
+	}
+}
+
+void apagar_mensagen_erro() {
+	chamar_CursorPosition("Mensagem de Erro");
+	cout << setw(40) << VAZIO;
+}
+
 void usuario_cadastro_escrever_opcoes() {
 	chamar_CursorPosition("Nome de Usuario");
 	cout << "Nome de Usuario: ";
@@ -264,32 +320,118 @@ void usuario_cadastro_escrever_opcoes() {
 	cout << "Nome Completo: ";
 	chamar_CursorPosition("Data de Nascimento");
 	cout << "Data de Nascimento: ";
+	chamar_CursorPosition("Genero");
+	cout << "Genero: ";
 }
 
-void idade_verificar(int *dia, int *mes, int *ano) {
-
+bool nome_comparar(Usuario usuario, string nome_requerido, string nome_registrado, int indice = 0) {
+	if (indice == nome_requerido.length())
+		return true;
+	if (nome_requerido[indice] != nome_registrado[indice]) 
+		return false;
+	else
+		return nome_comparar(usuario, nome_requerido, nome_registrado, ++indice);
 }
 
-void salvar_cadastro(Usuario &usuario, string *username, string *senha, int quantidade_de_usuarios) {
-	usuario.nome_de_usuario[quantidade_de_usuarios - 1] = username[0];
-	usuario.senha[quantidade_de_usuarios - 1] = senha[0];
+bool nome_verificar_disponibilidade(Usuario usuario, string *nome_ponteiro, int quantidade_de_usuarios) {
+	string nome = nome_ponteiro[0];
+	string nome_registrado;
+	int nome_atual_tamanho = nome.length();
+	int nome_registrado_tamanho = 0;
+	int indice_quantidade_usuarios = 0;
+	bool situacao = false;
+
+	if (quantidade_de_usuarios > 0) {
+		indice_quantidade_usuarios = quantidade_de_usuarios - 1;
+	}
+
+	for (int indice = 0; indice <= indice_quantidade_usuarios; indice++) {
+		nome_registrado = usuario.nome_de_usuario[indice];
+		nome_registrado_tamanho = nome_registrado.length();
+
+		if (nome_atual_tamanho == nome_registrado_tamanho) {
+			nome_comparar(usuario, nome, nome_registrado);
+			if (situacao) {
+				return true;
+			}
+		}
+	}
+	if (!situacao) {
+		return false;
+	}
+	
+}
+
+bool idade_verificar_maior_de_idade(int *dia_ponteiro, int *mes_ponteiro, int *ano_ponteiro) {
+	int dia = *dia_ponteiro;
+	int mes = *mes_ponteiro;
+	int ano = *ano_ponteiro;
+
+	if (ano > 1999) {
+		return false;
+	}
+	else
+		return true;
+}
+
+void salvar_cadastro(Usuario &usuario, string *username, string *senha, string *nome_completo, string data_nascimento, string *genero, int quantidade_de_usuarios) {
+	usuario.nome_de_usuario[quantidade_de_usuarios] = username[0];
+	usuario.senha[quantidade_de_usuarios] = senha[0];
+	usuario.nome[quantidade_de_usuarios] = nome_completo[0];
+	usuario.data_nascimento[quantidade_de_usuarios] = data_nascimento;
+	usuario.genero[quantidade_de_usuarios] = genero[0];
 }
 
 void usuario_cadastro(Usuario &usuario, int &quantidade_de_usuarios) {
 	string *username = new string[1];
 	string *senha = new string[1];
 	string *nome_completo = new string[1];
+	string *genero = new string[1];
 	int *data_de_nascimento_dia = new int[1];
 	int *data_de_nascimento_mes = new int[1];
 	int *data_de_nascimento_ano = new int[1];
 	string senha1;
 	string senha2;
+	string data_nascimento;
 	int tamanho_da_senha = 0;
-	bool situacao;
+	bool situacao = false;
+	bool erro = false;
 
 	usuario_cadastro_escrever_opcoes();
-	chamar_CursorPosition("Nome de Usuario Preenchimento");
-	getline(cin, *username);
+
+	do {
+		chamar_CursorPosition("Nome de Usuario Preenchimento");
+		getline(cin, *username);
+
+		if (erro) {
+			apagar_mensagen_erro();
+		}
+
+		if (username[0].length() == 0) {
+			chamar_CursorPosition("Mensagem de Erro");
+			mensagens_de_erro("Nome nao Permitido");
+			erro = true;
+			situacao = true;
+		}
+		else
+			erro = false;
+
+		if (!erro) {
+			situacao = nome_verificar_disponibilidade(usuario, username, quantidade_de_usuarios);
+			if (situacao) {
+				chamar_CursorPosition("Mensagem de Erro");
+				mensagens_de_erro("Nome Indisponivel");
+				nome_de_usuario_limpar_campo();
+				erro = true;
+			}
+		}
+	} while (situacao);
+
+	if (erro) {
+		apagar_mensagen_erro();
+		erro = false;
+	}
+
 	do {
 		chamar_CursorPosition("Senha Preenchimento");
 		getline(cin, *senha);
@@ -300,22 +442,139 @@ void usuario_cadastro(Usuario &usuario, int &quantidade_de_usuarios) {
 		tamanho_da_senha = senha1.length();
 		situacao = senha_verificar_igualdade(senha1, senha2, tamanho_da_senha);
 		if (situacao) {
+			chamar_CursorPosition("Mensagem de Erro");
+			mensagens_de_erro("Senha");
 			senha_limpar_campo();
+			erro = true;
 		}
 	} while (situacao);
+
+	if (erro) {
+		apagar_mensagen_erro();
+		erro = false;
+	}
 	chamar_CursorPosition("Nome Completo Preenchimento");
 	getline(cin, *nome_completo);
+
 	do {
 		chamar_CursorPosition("Data de Nascimento Dia Preenchimento");
-		getline(cin, *data_de_nascimento_dia);
+		cin >> *data_de_nascimento_dia;
 		chamar_CursorPosition("Data de Nascimento Mes Preenchimento");
-		getline(cin, *data_de_nascimento_mes);
+		cin >> *data_de_nascimento_mes;
 		chamar_CursorPosition("Data de Nascimento Ano Preenchimento");
-		getline(cin, *data_de_nascimento_ano);
-		idade_verificar(data_de_nascimento_dia, data_de_nascimento_mes, data_de_nascimento_ano);
-	} while (situacao);
-	salvar_cadastro(usuario, username, senha, quantidade_de_usuarios);
+		cin >> *data_de_nascimento_ano;
+		situacao = idade_verificar_maior_de_idade(data_de_nascimento_dia, data_de_nascimento_mes, data_de_nascimento_ano);
+		if (!situacao) {
+			chamar_CursorPosition("Mensagem de Erro");
+			mensagens_de_erro("Data de Nascimento");
+			data_de_nascimento_limpar_campo();
+		}
+	} while (!situacao);
+
+	if (erro) {
+		apagar_mensagen_erro();
+		erro = false;
+	}
+
+	chamar_CursorPosition("Genero Preenchimento");
+	getline(cin, *genero);
+
+	data_nascimento = data_de_nascimento_dia[0], + " / " + data_de_nascimento_mes[0], + " / " + data_de_nascimento_ano[0];
+	salvar_cadastro(usuario, username, senha, nome_completo, data_nascimento, genero, quantidade_de_usuarios);
+	chamar_CursorPosition("Usuario Criado com Sucesso");
+	cout << "Usuario Criado com sucesso, pressione qualquer tecla para voltar a pagina Inicial";
+	_getch();
+	
 	quantidade_de_usuarios++;
+}
+
+bool nome_verificar_registro(Usuario usuario, string nome, int quantidade_de_usuarios, int &indice_da_senha){
+	string nome_registrado;
+	int nome_atual_tamanho = nome.length();
+	int nome_registrado_tamanho = 0;
+	int indice_quantidade_usuarios = 0;
+	bool situacao = false;
+
+	if (quantidade_de_usuarios > 0) {
+		indice_quantidade_usuarios = quantidade_de_usuarios - 1;
+	}
+
+	for (int indice = 0; indice <= indice_quantidade_usuarios; indice++) {
+		nome_registrado = usuario.nome_de_usuario[indice];
+		nome_registrado_tamanho = nome_registrado.length();
+
+		if (nome_atual_tamanho == nome_registrado_tamanho) {
+			situacao = nome_comparar(usuario, nome, nome_registrado);
+			if (situacao) {
+				indice_da_senha = indice;
+				return true;
+			}
+		}
+	}
+	if(!situacao)
+		return false;
+}
+
+bool senha_comparar_registro(Usuario usuario, string senha, int indice_senha) {
+	string senha_registro = usuario.senha[indice_senha];
+	int tamanho_senha = senha_registro.length();
+
+	for (int indice = 0; indice < tamanho_senha; indice++) {
+		if (senha[indice] != senha_registro[indice]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void usuario_login_screen_opcoes() {
+	chamar_CursorPosition("Nome de Usuario");
+	cout << "Nome de Usuario: ";
+	chamar_CursorPosition("Senha");
+	cout << "Senha: ";
+}
+
+void usuario_login(Usuario usuario, int quantidade_de_usuarios) {
+	string nome_de_usuario;
+	string senha;
+	bool situacao;
+	bool erro = false;
+	int senha_indice = 0;
+	do {
+		do {
+			chamar_CursorPosition("Nome de Usuario Preenchimento");
+			getline(cin, nome_de_usuario);
+			situacao = nome_verificar_registro(usuario, nome_de_usuario, quantidade_de_usuarios, senha_indice);
+			if (!situacao) {
+				chamar_CursorPosition("Mensagem de Erro");
+				mensagens_de_erro("Nome nao Cadastrado");
+				nome_de_usuario_limpar_campo();
+				erro = true;
+			}
+		} while (!situacao);
+
+		if(erro){
+			apagar_mensagen_erro();
+			erro = false;
+		}
+
+	
+			chamar_CursorPosition("Senha Preenchimento");
+			getline(cin, senha);
+			situacao = senha_comparar_registro(usuario, senha, senha_indice);
+			if (!situacao) {
+				chamar_CursorPosition("Mensagem de Erro");
+				mensagens_de_erro("Senha Login");
+				nome_de_usuario_limpar_campo();
+				senha_limpar_campo();
+				erro = true;
+			}
+	} while (!situacao);
+}
+
+void usuario_login_screen(Usuario usuario, int quantidade_de_usuarios) {
+	usuario_login_screen_opcoes();
+	usuario_login(usuario, quantidade_de_usuarios);
 }
 
 int main()
@@ -323,18 +582,27 @@ int main()
 	Corpo_principal pagina;
 	Usuario usuario;
 	int auxiliar = BORDA_PRINCIPAL_VERTICAL - 1;
-	int quantidade_de_usuarios = 1;
-	usuario.nome_de_usuario = new string[quantidade_de_usuarios];
-	usuario.nome = new string[quantidade_de_usuarios];
-	usuario.senha = new string[quantidade_de_usuarios];
-	usuario.genero = new string[quantidade_de_usuarios];
-	usuario.data_nascimento = new string[quantidade_de_usuarios];
+	int quantidade_de_usuarios = 0;
+	int opcao = 0;
+	usuario.nome_de_usuario = new string[quantidade_de_usuarios + 1];
+	usuario.nome = new string[quantidade_de_usuarios + 1];
+	usuario.senha = new string[quantidade_de_usuarios + 1];
+	usuario.genero = new string[quantidade_de_usuarios + 1];
+	usuario.data_nascimento = new string[quantidade_de_usuarios + 1];
 	
 	preencher_corpo(pagina);
 	bordas_principal(pagina, auxiliar);
-	desenhar_pagina_inicial(pagina);
-	pagina_inicial_opcao();
-	usuario_cadastro(usuario, quantidade_de_usuarios);
+
+	do {
+		desenhar_pagina_inicial(pagina);
+		opcao = pagina_inicial_opcao();
+		if (opcao == 1)
+			usuario_login_screen(usuario, quantidade_de_usuarios);
+		else if (opcao == 2)
+			usuario_cadastro(usuario, quantidade_de_usuarios);
+		setCursorPosition_posicao(0, 0);
+	} while (opcao != 3);
+
 	system("pause");
 	return 0;
 }
