@@ -34,12 +34,20 @@ const int MENSAGEM_DE_ERRO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCR
 const int MENSAGEM_DE_ERRO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 10;
 const int MENSAGEM_USUARIO_CRIACO_SUCESSO_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL - 20;
 const int MENSAGEM_USUARIO_CRIACO_SUCESSO_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 10;
+const int MENSAGEM_CRIACAO_DE_POST_X = BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL;
+const int MENSAGEM_CRIACAO_DE_POST_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL;
+const int CRIANDO_MENSAGEM_DO_POST_X = BORDA_PRINCIPAL_HORIZONTAL / 4;
+const int CRIANDO_MENSAGEM_DO_POST_Y = BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL + 2;
 
 const char CERCA = '#';
 const char VAZIO = '\0';
 
 
 struct Corpo_principal {
+	char corpo[BORDA_PRINCIPAL_VERTICAL][BORDA_PRINCIPAL_HORIZONTAL];
+};
+
+struct Corpo_pagina_de_post {
 	char corpo[BORDA_PRINCIPAL_VERTICAL][BORDA_PRINCIPAL_HORIZONTAL];
 };
 
@@ -51,15 +59,19 @@ struct Usuario {
 	string *data_nascimento;
 };
 
+struct Posts {
+	string *post;
+};
+
 void setCursorPosition_posicao(int x, int y)
 {
-	
+
 	static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD cordenadas_cursor = { (SHORT)x , (SHORT)y };
 	SetConsoleCursorPosition(hOut, cordenadas_cursor);
 }
 
-void limpar_mensagens(int x, int y){
+void limpar_mensagens(int x, int y) {
 	setCursorPosition_posicao(x, y);
 	cout << setw(40) << VAZIO;
 }
@@ -122,6 +134,12 @@ void chamar_CursorPosition(string elemento) {
 	}
 	else if (elemento == "Usuario Criado com Sucesso") {
 		setCursorPosition_posicao(MENSAGEM_USUARIO_CRIACO_SUCESSO_X, MENSAGEM_USUARIO_CRIACO_SUCESSO_Y);
+	}
+	else if (elemento == "Digite o que esta pensando") {
+		setCursorPosition_posicao(MENSAGEM_CRIACAO_DE_POST_X, MENSAGEM_CRIACAO_DE_POST_Y);
+	}
+	else if (elemento == "Criando Post") {
+		setCursorPosition_posicao(CRIANDO_MENSAGEM_DO_POST_X, CRIANDO_MENSAGEM_DO_POST_Y);
 	}
 
 }
@@ -236,7 +254,7 @@ void desenhar_pagina_inicial(Corpo_principal pagina, int linha = 0, int coluna =
 int pagina_inicial_opcao() {
 	int opcao;
 	bool situacao = false;
-	do{
+	do {
 		setCursorPosition_posicao(BORDA_PRINCIPAL_HORIZONTAL / 2 - CENTRALIZAR_ESCRITA_HORIZONTAL, BORDA_PRINCIPAL_VERTICAL / 2 - CENTRALIZAR_ESCRITA_VERTICAL);
 		cout << "1 - Entrar" << endl;
 		cout << "#" << setw(BORDA_PRINCIPAL_HORIZONTAL / 2 + PAGINA_INICIAL_SEGUNDA_OPCAO);
@@ -327,7 +345,7 @@ void usuario_cadastro_escrever_opcoes() {
 bool nome_comparar(Usuario usuario, string nome_requerido, string nome_registrado, int indice = 0) {
 	if (indice == nome_requerido.length())
 		return true;
-	if (nome_requerido[indice] != nome_registrado[indice]) 
+	if (nome_requerido[indice] != nome_registrado[indice])
 		return false;
 	else
 		return nome_comparar(usuario, nome_requerido, nome_registrado, ++indice);
@@ -359,7 +377,7 @@ bool nome_verificar_disponibilidade(Usuario usuario, string *nome_ponteiro, int 
 	if (!situacao) {
 		return false;
 	}
-	
+
 }
 
 bool idade_verificar_maior_de_idade(int *dia_ponteiro, int *mes_ponteiro, int *ano_ponteiro) {
@@ -479,16 +497,16 @@ void usuario_cadastro(Usuario &usuario, int &quantidade_de_usuarios) {
 	chamar_CursorPosition("Genero Preenchimento");
 	getline(cin, *genero);
 
-	data_nascimento = data_de_nascimento_dia[0], + " / " + data_de_nascimento_mes[0], + " / " + data_de_nascimento_ano[0];
+	data_nascimento = data_de_nascimento_dia[0], +" / " + data_de_nascimento_mes[0], +" / " + data_de_nascimento_ano[0];
 	salvar_cadastro(usuario, username, senha, nome_completo, data_nascimento, genero, quantidade_de_usuarios);
 	chamar_CursorPosition("Usuario Criado com Sucesso");
 	cout << "Usuario Criado com sucesso, pressione qualquer tecla para voltar a pagina Inicial";
 	_getch();
-	
+
 	quantidade_de_usuarios++;
 }
 
-bool nome_verificar_registro(Usuario usuario, string nome, int quantidade_de_usuarios, int &indice_da_senha){
+bool nome_verificar_registro(Usuario usuario, string nome, int quantidade_de_usuarios, int &indice_da_senha) {
 	string nome_registrado;
 	int nome_atual_tamanho = nome.length();
 	int nome_registrado_tamanho = 0;
@@ -511,7 +529,7 @@ bool nome_verificar_registro(Usuario usuario, string nome, int quantidade_de_usu
 			}
 		}
 	}
-	if(!situacao)
+	if (!situacao)
 		return false;
 }
 
@@ -553,22 +571,22 @@ void usuario_login(Usuario usuario, int quantidade_de_usuarios) {
 			}
 		} while (!situacao);
 
-		if(erro){
+		if (erro) {
 			apagar_mensagen_erro();
 			erro = false;
 		}
 
-	
-			chamar_CursorPosition("Senha Preenchimento");
-			getline(cin, senha);
-			situacao = senha_comparar_registro(usuario, senha, senha_indice);
-			if (!situacao) {
-				chamar_CursorPosition("Mensagem de Erro");
-				mensagens_de_erro("Senha Login");
-				nome_de_usuario_limpar_campo();
-				senha_limpar_campo();
-				erro = true;
-			}
+
+		chamar_CursorPosition("Senha Preenchimento");
+		getline(cin, senha);
+		situacao = senha_comparar_registro(usuario, senha, senha_indice);
+		if (!situacao) {
+			chamar_CursorPosition("Mensagem de Erro");
+			mensagens_de_erro("Senha Login");
+			nome_de_usuario_limpar_campo();
+			senha_limpar_campo();
+			erro = true;
+		}
 	} while (!situacao);
 }
 
@@ -577,24 +595,365 @@ void usuario_login_screen(Usuario usuario, int quantidade_de_usuarios) {
 	usuario_login(usuario, quantidade_de_usuarios);
 }
 
+string converter_de_decimal_para_letra(int letra_decimal) {
+	if (letra_decimal == 8) {
+		return "\0";
+	}
+	else if (letra_decimal == 27) {
+		return "ESC";
+	}
+	else if (letra_decimal == 32) {
+		return " ";
+	}
+	else if (letra_decimal == 33) {
+		return "!";
+	}
+	else if (letra_decimal == 34) {
+		return "\"";
+	}
+	else if (letra_decimal == 35) {
+		return "#";
+	}
+	else if (letra_decimal == 36) {
+		return "$";
+	}
+	else if (letra_decimal == 37) {
+		return "%";
+	}
+	else if (letra_decimal == 38) {
+		return "&";
+	}
+	else if (letra_decimal == 39) {
+		return "'";
+	}
+	else if (letra_decimal == 40) {
+		return "(";
+	}
+	else if (letra_decimal == 41) {
+		return ")";
+	}
+	else if (letra_decimal == 42) {
+		return "*";
+	}
+	else if (letra_decimal == 43) {
+		return "+";
+	}
+	else if (letra_decimal == 44) {
+		return ",";
+	}
+	else if (letra_decimal == 45) {
+		return "-";
+	}
+	else if (letra_decimal == 46) {
+		return ".";
+	}
+	else if (letra_decimal == 47) {
+		return "/";
+	}
+	else if (letra_decimal == 48) {
+		return "0";
+	}
+	else if (letra_decimal == 49) {
+		return "1";
+	}
+	else if (letra_decimal == 50) {
+		return "2";
+	}
+	else if (letra_decimal == 51) {
+		return "3";
+	}
+	else if (letra_decimal == 52) {
+		return "4";
+	}
+	else if (letra_decimal == 53) {
+		return "5";
+	}
+	else if (letra_decimal == 54) {
+		return "6";
+	}
+	else if (letra_decimal == 55) {
+		return "7";
+	}
+	else if (letra_decimal == 56) {
+		return "8";
+	}
+	else if (letra_decimal == 57) {
+		return "9";
+	}
+	else if (letra_decimal == 58) {
+		return ":";
+	}
+	else if (letra_decimal == 59) {
+		return ";";
+	}
+	else if (letra_decimal == 60) {
+		return "<";
+	}
+	else if (letra_decimal == 61) {
+		return "=";
+	}
+	else if (letra_decimal == 62) {
+		return ">";
+	}
+	else if (letra_decimal == 63) {
+		return "?";
+	}
+	else if (letra_decimal == 64) {
+		return "@";
+	}
+	else if (letra_decimal == 65) {
+		return "A";
+	}
+	else if (letra_decimal == 66) {
+		return "B";
+	}
+	else if (letra_decimal == 67) {
+		return "C";
+	}
+	else if (letra_decimal == 68) {
+		return "D";
+	}
+	else if (letra_decimal == 69) {
+		return "E";
+	}
+	else if (letra_decimal == 70) {
+		return "F";
+	}
+	else if (letra_decimal == 71) {
+		return "G";
+	}
+	else if (letra_decimal == 72) {
+		return "H";
+	}
+	else if (letra_decimal == 73) {
+		return "I";
+	}
+	else if (letra_decimal == 74) {
+		return "J";
+	}
+	else if (letra_decimal == 75) {
+		return "K";
+	}
+	else if (letra_decimal == 76) {
+		return "L";
+	}
+	else if (letra_decimal == 77) {
+		return "M";
+	}
+	else if (letra_decimal == 78) {
+		return "N";
+	}
+	else if (letra_decimal == 79) {
+		return "O";
+	}
+	else if (letra_decimal == 80) {
+		return "P";
+	}
+	else if (letra_decimal == 81) {
+		return "Q";
+	}
+	else if (letra_decimal == 82) {
+		return "R";
+	}
+	else if (letra_decimal == 83) {
+		return "S";
+	}
+	else if (letra_decimal == 84) {
+		return "T";
+	}
+	else if (letra_decimal == 85) {
+		return "U";
+	}
+	else if (letra_decimal == 86) {
+		return "V";
+	}
+	else if (letra_decimal == 87) {
+		return "W";
+	}
+	else if (letra_decimal == 88) {
+		return "X";
+	}
+	else if (letra_decimal == 89) {
+		return "Y";
+	}
+	else if (letra_decimal == 90) {
+		return "Z";
+	}
+	else if (letra_decimal == 91) {
+		return "[";
+	}
+	else if (letra_decimal == 92) {
+		return "\\";
+	}
+	else if (letra_decimal == 93) {
+		return "]";
+	}
+	else if (letra_decimal == 94) {
+		return "^";
+	}
+	else if (letra_decimal == 95) {
+		return "_";
+	}
+	else if (letra_decimal == 96) {
+		return "'";
+	}
+	else if (letra_decimal == 97) {
+		return "a";
+	}
+	else if (letra_decimal == 98) {
+		return "b";
+	}
+	else if (letra_decimal == 99) {
+		return "c";
+	}
+	else if (letra_decimal == 100) {
+		return "d";
+	}
+	else if (letra_decimal == 101) {
+		return "e";
+	}
+	else if (letra_decimal == 102) {
+		return "f";
+	}
+	else if (letra_decimal == 103) {
+		return "g";
+	}
+	else if (letra_decimal == 104) {
+		return "h";
+	}
+	else if (letra_decimal == 105) {
+		return "i";
+	}
+	else if (letra_decimal == 106) {
+		return "j";
+	}
+	else if (letra_decimal == 107) {
+		return "k";
+	}
+	else if (letra_decimal == 108) {
+		return "l";
+	}
+	else if (letra_decimal == 109) {
+		return "m";
+	}
+	else if (letra_decimal == 110) {
+		return "n";
+	}
+	else if (letra_decimal == 111) {
+		return "o";
+	}
+	else if (letra_decimal == 112) {
+		return "p";
+	}
+	else if (letra_decimal == 113) {
+		return "q";
+	}
+	else if (letra_decimal == 114) {
+		return "r";
+	}
+	else if (letra_decimal == 115) {
+		return "s";
+	}
+	else if (letra_decimal == 116) {
+		return "t";
+	}
+	else if (letra_decimal == 117) {
+		return "u";
+	}
+	else if (letra_decimal == 118) {
+		return "v";
+	}
+	else if (letra_decimal == 119) {
+		return "w";
+	}
+	else if (letra_decimal == 120) {
+		return "x";
+	}
+	else if (letra_decimal == 121) {
+		return "y";
+	}
+	else if (letra_decimal == 122) {
+		return "z";
+	}
+	else if (letra_decimal == 123) {
+		return "{";
+	}
+	else if (letra_decimal == 124) {
+		return "|";
+	}
+	else if (letra_decimal == 125) {
+		return "}";
+	}
+	else if (letra_decimal == 126) {
+		return "~";
+	}
+}
+
+void post_CursorPosition(int indice) {
+	setCursorPosition_posicao(CRIANDO_MENSAGEM_DO_POST_X, CRIANDO_MENSAGEM_DO_POST_Y + indice);
+}
+
+void _criando_post(string &post, int &chamadas, int &indice, int indice_de_retorno = BORDA_PRINCIPAL_HORIZONTAL / 4) {
+	if (indice_de_retorno == 100 + BORDA_PRINCIPAL_HORIZONTAL / 4 || chamadas == 280)
+		return;
+
+	string letra;
+
+	int letra_decimal = 0;
+	letra_decimal = _getch();
+	letra = converter_de_decimal_para_letra(letra_decimal);
+	cout << letra;
+
+	if (indice_de_retorno == BORDA_PRINCIPAL_HORIZONTAL - 10) {
+		++indice;
+		post_CursorPosition(indice);
+	}
+	post += letra;
+	_criando_post(post, ++chamadas, indice, ++indice_de_retorno);
+}
+
+void criando_post(string &post, int chamadas = 0, int indice = 0) {
+	if (chamadas == 280)
+		return;
+
+	_criando_post(post, chamadas, indice);
+	criando_post(post, chamadas, indice);
+}
+
+void criacao_post_pagina(Posts &post, int quantidade_de_posts) {
+	string post_atual = " ";
+
+	int indice_do_post = quantidade_de_posts;
+	chamar_CursorPosition("Digite o que esta pensando");
+	cout << "Digite o que esta pensando";
+	chamar_CursorPosition("Criando Post");
+	criando_post(post_atual);
+}
+
 int main()
 {
 	Corpo_principal pagina;
 	Usuario usuario;
+	Posts post;
+	Corpo_pagina_de_post pagina_post_corpo;
+
 	int auxiliar = BORDA_PRINCIPAL_VERTICAL - 1;
 	int quantidade_de_usuarios = 0;
+	int quantidade_de_posts = 0;
 	int opcao = 0;
 	usuario.nome_de_usuario = new string[quantidade_de_usuarios + 1];
 	usuario.nome = new string[quantidade_de_usuarios + 1];
 	usuario.senha = new string[quantidade_de_usuarios + 1];
 	usuario.genero = new string[quantidade_de_usuarios + 1];
 	usuario.data_nascimento = new string[quantidade_de_usuarios + 1];
-	
+	post.post = new string[quantidade_de_posts + 1];
+
 	preencher_corpo(pagina);
 	bordas_principal(pagina, auxiliar);
 
 	do {
 		desenhar_pagina_inicial(pagina);
+		criacao_post_pagina(post, quantidade_de_posts);
 		opcao = pagina_inicial_opcao();
 		if (opcao == 1)
 			usuario_login_screen(usuario, quantidade_de_usuarios);
