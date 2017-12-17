@@ -276,10 +276,6 @@ int pagina_inicial_opcao() {
 	return opcao;
 }
 
-void usuario_autenticacao() {
-
-}
-
 bool senha_verificar_igualdade(string senha1, string senha2, int tamanho_da_senha, int indice = 0) {
 	if (indice == tamanho_da_senha && tamanho_da_senha != 0)
 		return false;
@@ -599,6 +595,12 @@ string converter_de_decimal_para_letra(int letra_decimal) {
 	if (letra_decimal == 8) {
 		return "\0";
 	}
+	else if (letra_decimal == 9) {
+		return "\n";
+	}
+	else if (letra_decimal == 13) {
+		return "CR";
+	}
 	else if (letra_decimal == 27) {
 		return "ESC";
 	}
@@ -889,12 +891,12 @@ string converter_de_decimal_para_letra(int letra_decimal) {
 	}
 }
 
-void post_CursorPosition(int indice) {
-	setCursorPosition_posicao(CRIANDO_MENSAGEM_DO_POST_X, CRIANDO_MENSAGEM_DO_POST_Y + indice);
+void post_CursorPosition(int indice, int x_indice = 0) {
+	setCursorPosition_posicao(CRIANDO_MENSAGEM_DO_POST_X + x_indice, CRIANDO_MENSAGEM_DO_POST_Y + indice);
 }
 
-void _criando_post(string &post, int &chamadas, int &indice, int indice_de_retorno = BORDA_PRINCIPAL_HORIZONTAL / 4) {
-	if (indice_de_retorno == 100 + BORDA_PRINCIPAL_HORIZONTAL / 4 || chamadas == 280)
+void _criando_post(string &post, int &chamadas, int &indice, int indice_de_retorno = 0) {
+	if (indice_de_retorno == 50 || chamadas == 280)
 		return;
 
 	string letra;
@@ -902,10 +904,21 @@ void _criando_post(string &post, int &chamadas, int &indice, int indice_de_retor
 	int letra_decimal = 0;
 	letra_decimal = _getch();
 	letra = converter_de_decimal_para_letra(letra_decimal);
+	if (letra[0] == 'C' && letra[1] == 'R') {
+		chamadas = 280;
+		return _criando_post(post, chamadas, indice, ++indice_de_retorno);
+	}
+	if (letra == "") {
+		int auxiliar = post.length();
+		auxiliar -= 2;
+		post[chamadas - 1] = VAZIO;
+		post_CursorPosition(indice, auxiliar);
+	}
 	cout << letra;
 
 	if (indice_de_retorno == BORDA_PRINCIPAL_HORIZONTAL - 10) {
 		++indice;
+		indice_de_retorno = 0;
 		post_CursorPosition(indice);
 	}
 	post += letra;
